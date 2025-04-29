@@ -1,0 +1,116 @@
+services:
+  db:
+    image: postgres:14-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - seajobs-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: seajobs-backend:latest
+    volumes:
+      - ./backend:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    env_file:
+      - ./.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=seajobs.settings
+      - PYTHONUNBUFFERED=1
+    command: /app/docker-entrypoint.sh
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/api/health/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - seajobs-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://localhost/api
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - seajobs-network
+
+  minio:
+    image: minio/minio:latest
+    volumes:
+      - minio_data:/data
+    env_file:
+      - ./.env
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - seajobs-network
+
+  nginx:
+    image: nginx:1.21-alpine
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/static:ro
+      - media_volume:/app/media:ro
+      - ./frontend/build:/usr/share/nginx/html:ro
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - seajobs-network
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  minio_data:
+
+networks:
+  seajobs-network:
+    driver: bridge

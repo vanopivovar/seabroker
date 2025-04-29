@@ -1,0 +1,84 @@
+// Import Bootstrap
+@import "~bootstrap/scss/bootstrap";
+
+// Custom variables
+$primary-color: #0c5782;
+$secondary-color: #18a0fb;
+$dark-color: #1e3a5f;
+$light-color: #f8f9fa;
+$success-color: #28a745;
+$danger-color: #dc3545;
+$warning-color: #ffc107;
+$info-color: #17a2b8;
+
+// Global styles
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f8fa;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+// Custom buttons
+.btn-primary {
+  background-color: $primary-color;
+  border-color: $primary-color;
+  
+  &:hover, &:focus, &:active {
+    background-color: darken($primary-color, 10%);
+    border-color: darken($primary-color, 10%);
+  }
+}
+
+.btn-secondary {
+  background-color: $secondary-color;
+  border-color: $secondary-color;
+  
+  &:hover, &:focus, &:active {
+    background-color: darken($secondary-color, 10%);
+    border-color: darken($secondary-color, 10%);
+  }
+}
+
+// Navbar customization
+.navbar-brand {
+  font-weight: 700;
+  color: $primary-color;
+}
+
+// Card customization
+.card {
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  
+  .card-header {
+    background-color: $light-color;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+  }
+}
+
+// Form customization
+.form-control {
+  &:focus {
+    border-color: $secondary-color;
+    box-shadow: 0 0 0 0.2rem rgba($secondary-color, 0.25);
+  }
+}
+
+// Custom mobile styling
+@media (max-width: 768px) {
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}

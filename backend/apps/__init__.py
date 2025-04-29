@@ -1,0 +1,1 @@
+# SeaJobs apps package

@@ -1,0 +1,10 @@
+from django.apps import AppConfig
+
+
+class VacanciesConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'apps.vacancies'
+    verbose_name = 'Job Vacancies'
+
+    def ready(self):
+        import apps.vacancies.signals
